@@ -3,7 +3,7 @@ version: "3.8"
 services:
   gost:
     image: docker.iranserver.com/gogost/gost
-    container_name: gost
+    container_name: v2socks-gost
     restart: always
     command: -L socks5://:1080 -L http://:3080 -F sni://138.201.54.122:443
     ports:
@@ -14,7 +14,7 @@ services:
 
   tun2proxy:
     image: ghcr.io/tun2proxy/tun2proxy-alpine:latest
-    container_name: tun2proxy
+    container_name: v2socks-tun2proxy
     restart: always
     depends_on:
       - gost
@@ -36,7 +36,7 @@ services:
 
   v2raya:
     image: docker.iranserver.com/mzz2017/v2raya
-    container_name: v2raya
+    container_name: v2socks-v2raya
     restart: always
     network_mode: service:tun2proxy
     depends_on:
