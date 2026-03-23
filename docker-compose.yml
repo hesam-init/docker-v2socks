@@ -1,11 +1,18 @@
 version: "3.8"
 
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "8m"
+    max-file: "1"
+
 services:
   gost:
-    image: docker.iranserver.com/gogost/gost
+    image: mirror-docker.runflare.com/gogost/gost:3.2.6
     container_name: v2socks-gost
+    logging: *default-logging
     restart: always
-    command: -L socks5://:1080 -L http://:3080 -F sni://138.201.54.122:443
+    command: -L socks5://:1080 -L http://:3080 -F sni://94.130.13.19:443
     ports:
       - "1080:1080"
       - "3080:3080"
@@ -15,6 +22,7 @@ services:
   tun2proxy:
     image: ghcr.io/tun2proxy/tun2proxy-alpine:latest
     container_name: v2socks-tun2proxy
+    logging: *default-logging
     restart: always
     depends_on:
       - gost
@@ -35,8 +43,9 @@ services:
       - proxy-net
 
   v2raya:
-    image: docker.iranserver.com/mzz2017/v2raya
+    image: mirror-docker.runflare.com/mzz2017/v2raya:v2.2.7.5
     container_name: v2socks-v2raya
+    logging: *default-logging
     restart: always
     network_mode: service:tun2proxy
     depends_on:
