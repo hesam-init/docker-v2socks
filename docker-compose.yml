@@ -8,7 +8,7 @@ x-logging: &default-logging
 
 services:
   gost:
-    image: mirror-docker.runflare.com/gogost/gost:3.2.6
+    image: docker.iranserver.com/gogost/gost:3.2.6
     container_name: v2socks-gost
     logging: *default-logging
     restart: always
@@ -43,7 +43,7 @@ services:
       - proxy-net
 
   v2raya:
-    image: mirror-docker.runflare.com/mzz2017/v2raya:v2.2.7.5
+    image: docker.iranserver.com/mzz2017/v2raya:v2.2.7.5
     container_name: v2socks-v2raya
     logging: *default-logging
     restart: always
