@@ -31,6 +31,7 @@ services:
     command: >
       -L http://:3080
       -L socks5://:1080
+      -L ss://chacha20-ietf-poly1305:forwarder@:8338
       -F sni://138.201.54.122:443
     networks:
       - proxy-net
@@ -95,7 +96,21 @@ services:
       V2RAYA_NFTABLES_SUPPORT: "off"
       IPTABLES_MODE: legacy
     volumes:
-      - ./v2raya:/etc/v2raya
+      - $PWD/v2raya:/etc/v2raya
+
+  3xui:
+    image: ghcr.io/mhsanaei/3x-ui:latest
+    container_name: 3xui_app
+    logging: *logging-default
+    restart: unless-stopped
+    network_mode: host
+    volumes:
+      - $PWD/3x-ui/db/:/etc/x-ui/
+      - $PWD/3x-ui/cert/:/root/cert/
+    environment:
+      XRAY_VMESS_AEAD_FORCED: "false"
+      XUI_ENABLE_FAIL2BAN: "true"
+    tty: true
 
 # ─────────────────────────────────────────────
 # Networks
