@@ -33,6 +33,10 @@ services:
       -L socks5://:1080
       -L ss://chacha20-ietf-poly1305:forwarder@:8338
       -F sni://138.201.54.122:443
+    ports:
+      - "8338:8338"
+      # - "1080:1080"
+      # - "3080:3080"
     networks:
       - proxy-net
 
