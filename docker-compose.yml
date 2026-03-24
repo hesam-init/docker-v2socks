@@ -1,28 +1,63 @@
 version: "3.8"
 
-x-logging: &default-logging
+# ─────────────────────────────────────────────
+# Logging presets
+# ─────────────────────────────────────────────
+x-logging-default: &logging-default
   driver: json-file
   options:
     max-size: "8m"
     max-file: "1"
 
+x-logging-silent: &logging-silent
+  driver: "none"
+
+# ─────────────────────────────────────────────
+# Shared gost image reference
+# ─────────────────────────────────────────────
+x-gost: &gost
+  image: docker.iranserver.com/gogost/gost:3.2.6
+  logging: *logging-silent
+  restart: always
+
+# ─────────────────────────────────────────────
+# Services
+# ─────────────────────────────────────────────
 services:
+  # Outbound SOCKS5 / HTTP proxy via SNI tunnel
   gost:
-    image: docker.iranserver.com/gogost/gost:3.2.6
+    <<: *gost
     container_name: v2socks-gost
-    logging: *default-logging
-    restart: always
-    command: -L socks5://:1080 -L http://:3080 -F sni://94.130.13.19:443
-    ports:
-      - "1080:1080"
-      - "3080:3080"
+    command: >
+      -L http://:3080
+      -L socks5://:1080
+      -F sni://138.201.54.122:443
     networks:
       - proxy-net
 
+  # Authenticated SOCKS5 listener → local SOCKS5 upstream
+  gost2proxy:
+    <<: *gost
+    container_name: v2socks-gost2proxy
+    network_mode: host
+    command: >
+      -L socks5://hesam:niggatron@:22277
+      -F socks5://127.0.0.1:20170
+
+  # TCP port forward for panel access
+  gost2panel:
+    <<: *gost
+    container_name: v2socks-gost2panel
+    network_mode: host
+    command: >
+      -L tcp://:2018
+      -F tcp://127.0.0.1:2017
+
+  # Transparent proxy via TUN interface
   tun2proxy:
     image: ghcr.io/tun2proxy/tun2proxy-alpine:latest
     container_name: v2socks-tun2proxy
-    logging: *default-logging
+    logging: *logging-default
     restart: always
     depends_on:
       - gost
@@ -37,30 +72,34 @@ services:
       - "20170:20170"
     extra_hosts:
       - host.docker.internal:host-gateway
-    command: --proxy socks5://gost:1080 --dns-addr 1.1.1.1 --dns virtual
-    # command: --proxy socks5://host.docker.internal:1080 --dns-addr 1.1.1.1 --dns virtual
+    command: >
+      --proxy socks5://gost:1080
+      --dns-addr 1.1.1.1
+      --dns virtual
     networks:
       - proxy-net
 
+  # v2rayA web UI — shares tun2proxy network namespace
   v2raya:
     image: docker.iranserver.com/mzz2017/v2raya:v2.2.7.5
     container_name: v2socks-v2raya
-    logging: *default-logging
+    logging: *logging-default
     restart: always
     network_mode: service:tun2proxy
     depends_on:
       - tun2proxy
     environment:
-      - V2RAYA_LOG_FILE=/tmp/v2raya.log
-      - V2RAYA_V2RAY_ASSETSDIR=/usr/local/share/v2ray
-      - V2RAYA_V2RAY_BIN=/usr/local/bin/xray
-      - V2RAYA_NFTABLES_SUPPORT=off
-      - IPTABLES_MODE=legacy
+      V2RAYA_LOG_FILE: /tmp/v2raya.log
+      V2RAYA_V2RAY_ASSETSDIR: /usr/local/share/v2ray
+      V2RAYA_V2RAY_BIN: /usr/local/bin/xray
+      V2RAYA_NFTABLES_SUPPORT: "off"
+      IPTABLES_MODE: legacy
     volumes:
-      # - /lib/modules:/lib/modules:ro
-      # - /etc/resolv.conf:/etc/resolv.conf
       - ./v2raya:/etc/v2raya
 
+# ─────────────────────────────────────────────
+# Networks
+# ─────────────────────────────────────────────
 networks:
   proxy-net:
     driver: bridge
