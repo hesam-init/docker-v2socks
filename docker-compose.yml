@@ -42,7 +42,7 @@ services:
     container_name: v2socks-gost2proxy
     network_mode: host
     command: >
-      -L socks5://hesam:niggatron@:22277
+      -L socks5://forward:forwarder@:22277
       -F socks5://127.0.0.1:20170
 
   # TCP port forward for panel access
