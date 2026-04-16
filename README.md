@@ -3,9 +3,9 @@
 Dockerized proxy stack that routes **v2raya** traffic through a **tun2proxy** TUN tunnel, backed by a **gost** SOCKS5 relay.
 
 ```
-gost (SOCKS5 :1080)
+gost (SOCKS5 :8320)
   └── tun2proxy (TUN interface)
-        └── v2raya (proxy manager UI :2017)
+        └── v2raya (proxy manager UI :2018)
 ```
 
 ## Requirements
@@ -28,7 +28,7 @@ v2raya UI will be available at `http://localhost:2017`.
 
 | Service | Image | Role |
 |---|---|---|
-| `gost` | `gogost/gost` | SOCKS5 relay on `:1080` |
+| `gost` | `gogost/gost` | SOCKS5 relay on `:8320` |
 | `tun2proxy` | `ghcr.io/tun2proxy/tun2proxy-alpine` | Routes traffic through gost via TUN |
 | `v2raya` | `mzz2017/v2raya` | Proxy manager, shares tun2proxy network |
 
@@ -38,13 +38,10 @@ Edit the `gost` command in `docker-compose.yml` to point at your upstream:
 
 ```yaml
 # Shadowsocks
-command: -L socks5://:1080 -F sni://138.201.54.122:443
-
-# VMess
-command: -L socks5://:1080 -F vmess://uuid@host:port?network=ws
+command: -L socks5://:8320 -F sni://138.201.54.122:443
 
 # Plain forward
-command: -L socks5://:1080 -F socks5://user:pass@host:port
+command: -L socks5://:8320 -F socks5://user:pass@host:port
 ```
 
 ### v2ray vs xray
@@ -64,5 +61,5 @@ v2raya config is persisted at `./v2raya` (mounted to `/etc/v2raya`).
 
 | Port | Service |
 |---|---|
-| `2017` | v2raya web UI |
-| `20170` | v2raya transparent proxy |
+| `2018` | v2raya web UI |
+| `22277` | v2raya transparent proxy |

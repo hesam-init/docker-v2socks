@@ -29,14 +29,14 @@ services:
     <<: *gost
     container_name: v2socks-gost
     command: >
-      -L http://:3080
-      -L socks5://:1080
-      -L ss://chacha20-ietf-poly1305:forwarder@:8338
-      -F sni://94.130.50.12:443
+      -L http://:8310
+      -L socks5://:8320
+      -L ss://chacha20-ietf-poly1305:forwarder@:8330
+      -F sni://95.216.69.37:443
     ports:
-      - "8338:8338"
-      - "1080:1080"
-      - "3080:3080"
+      - "8310:8310"
+      - "8320:8320"
+      - "8330:8330"
     networks:
       - proxy-net
 
@@ -47,7 +47,7 @@ services:
     network_mode: host
     command: >
       -L socks5://forward:forwarder@:22277
-      -F socks5://127.0.0.1:20170
+      -F socks5://127.0.0.1:22170
 
   # TCP port forward for panel access
   gost2panel:
@@ -56,7 +56,7 @@ services:
     network_mode: host
     command: >
       -L tcp://:2018
-      -F tcp://127.0.0.1:2017
+      -F tcp://127.0.0.1:2217
 
   # Transparent proxy via TUN interface
   tun2proxy:
@@ -73,12 +73,12 @@ services:
     devices:
       - /dev/net/tun:/dev/net/tun
     ports:
-      - "2017:2017"
-      - "20170:20170"
+      - "2217:2017"
+      - "22170:20170"
     extra_hosts:
       - host.docker.internal:host-gateway
     command: >
-      --proxy socks5://gost:1080
+      --proxy socks5://gost:8320
       --dns-addr 1.1.1.1
       --dns virtual
     networks:
