@@ -16,7 +16,7 @@ x-logging-silent: &logging-silent
 # Shared gost image reference
 # ─────────────────────────────────────────────
 x-gost: &gost
-  image: docker.iranserver.com/gogost/gost:3.2.6
+  image: gogost/gost:3.2.6
   logging: *logging-silent
   restart: always
 
@@ -32,11 +32,11 @@ services:
       -L http://:3080
       -L socks5://:1080
       -L ss://chacha20-ietf-poly1305:forwarder@:8338
-      -F sni://138.201.54.122:443
+      -F sni://94.130.50.12:443
     ports:
       - "8338:8338"
-      # - "1080:1080"
-      # - "3080:3080"
+      - "1080:1080"
+      - "3080:3080"
     networks:
       - proxy-net
 
@@ -86,7 +86,7 @@ services:
 
   # v2rayA web UI — shares tun2proxy network namespace
   v2raya:
-    image: docker.iranserver.com/mzz2017/v2raya:v2.2.7.5
+    image: mzz2017/v2raya:v2.2.7.5
     container_name: v2socks-v2raya
     logging: *logging-default
     restart: always
@@ -102,19 +102,19 @@ services:
     volumes:
       - $PWD/v2raya:/etc/v2raya
 
-  3xui:
-    image: ghcr.io/mhsanaei/3x-ui:latest
-    container_name: 3xui_app
-    logging: *logging-default
-    restart: unless-stopped
-    network_mode: host
-    volumes:
-      - $PWD/3x-ui/db/:/etc/x-ui/
-      - $PWD/3x-ui/cert/:/root/cert/
-    environment:
-      XRAY_VMESS_AEAD_FORCED: "false"
-      XUI_ENABLE_FAIL2BAN: "true"
-    tty: true
+  # 3xui:
+  #   image: ghcr.io/mhsanaei/3x-ui:latest
+  #   container_name: 3xui_app
+  #   logging: *logging-default
+  #   restart: unless-stopped
+  #   network_mode: host
+  #   volumes:
+  #     - $PWD/3x-ui/db/:/etc/x-ui/
+  #     - $PWD/3x-ui/cert/:/root/cert/
+  #   environment:
+  #     XRAY_VMESS_AEAD_FORCED: "false"
+  #     XUI_ENABLE_FAIL2BAN: "true"
+  #   tty: true
 
 # ─────────────────────────────────────────────
 # Networks
